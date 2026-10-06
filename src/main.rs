@@ -3,7 +3,8 @@ mod window;
 use window::Window;
 
 
-fn main() {
-    let window = Window::new("Hi All", 800, 640);
-    window.view();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut win = Window::new("My App", 800, 640)?;
+    win.view();
+    Ok(())
 }

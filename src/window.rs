@@ -1,13 +1,12 @@
-mod render;
+
+use sdl3::render::Canvas;
+use sdl3::{EventPump, Sdl};
+
+mod view;
+mod window;
 
 pub struct Window {
-    title: String,
-    width: u32,
-    height: u32,
-}
-
-impl Window {
-    pub fn new(title: &str, width: u32, height: u32) -> Self {
-        Self { title: title.to_string(), width, height }
-    }
+    _sdl: Sdl,
+    canvas: Canvas<sdl3::video::Window>,
+    event_pump: EventPump,
 }
