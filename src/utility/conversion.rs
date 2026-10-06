@@ -1,9 +1,5 @@
 use sdl3::pixels::Color;
-
-
-pub trait ConvertColor {
-    fn to_sdl_color(self) -> Color;
-}
+use crate::utility::ConvertColor;
 
 impl ConvertColor for u32 {
     fn to_sdl_color(self) -> Color {
