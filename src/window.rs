@@ -1,6 +1,6 @@
 
 use sdl3::render::Canvas;
-use sdl3::{EventPump, Sdl};
+use sdl3::{ EventPump, Sdl };
 
 mod view;
 mod window;
