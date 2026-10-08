@@ -49,10 +49,10 @@ impl Position {
 
     pub fn step(self, direction: DirectionEnum) -> Position {
         match direction {
-            DirectionEnum::UP => Position::new(self.x, self.y - 1),
-            DirectionEnum::LEFT => Position::new(self.x - 1, self.x),
-            DirectionEnum::DOWN => Position::new(self.x, self.y + 1),
-            DirectionEnum::RIGHT => Position::new(self.x + 1, self.x),
+            DirectionEnum::UP       => Position::new(self.x,        self.y - 1),
+            DirectionEnum::LEFT     => Position::new(self.x - 1,    self.x),
+            DirectionEnum::DOWN     => Position::new(self.x,        self.y + 1),
+            DirectionEnum::RIGHT    => Position::new(self.x + 1,    self.x),
         }
     }
 
@@ -135,6 +135,6 @@ impl Grid {
     }
 
     fn index_of(&self, position: Position) -> usize {
-        (position.x * self.size + position.y) as usize
+        (position.x + self.size * position.y) as usize
     }
 }
