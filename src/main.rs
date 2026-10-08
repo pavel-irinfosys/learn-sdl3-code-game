@@ -12,10 +12,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap()
         .as_nanos() as u64;
 
-    let mut grid = Grid::new(8);
-    grid.set(Position::new(2, 3), TileEnum::START);
-    grid.set(Position::new(6, 3), TileEnum::END);
-    grid.set_random_rocks(32, seed);
+    let mut grid = Grid::new(4);
+    grid.set_random_rocks(3, seed);
+    grid.set(Position::new(2, 2), TileEnum::START);
+    grid.set(Position::new(0, 2), TileEnum::END);
     grid.print();
 
     let mut win = Window::new("My App", 800, 640, grid)?;

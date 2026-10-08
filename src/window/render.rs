@@ -46,10 +46,10 @@ impl Window {
 }
 fn tile_color(tile: TileEnum) -> Color {
     match tile {
-        TileEnum::EMPTY => "#2E2D2D".to_sdl_color(),
-        TileEnum::ROCK => "#7A7A7A".to_sdl_color(),
-        TileEnum::START => "#3FB950".to_sdl_color(),
-        TileEnum::END => "#E5534B".to_sdl_color(),
-        TileEnum::UNKNOWN => "#B083F0".to_sdl_color(),
+        TileEnum::EMPTY => "#A3B087".to_sdl_color(),
+        TileEnum::ROCK => "#435663".to_sdl_color(),
+        TileEnum::START => "#BD4444".to_sdl_color(),
+        TileEnum::END => "#FF7F11".to_sdl_color(),
+        TileEnum::UNKNOWN => "#313647".to_sdl_color(),
     }
 }
