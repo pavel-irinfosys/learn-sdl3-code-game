@@ -19,7 +19,7 @@ impl TileEnum {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum DirectionEnum {
     UP,
     LEFT,
