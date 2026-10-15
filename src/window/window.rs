@@ -1,5 +1,5 @@
 type AppResult<T> = Result<T, Box<dyn std::error::Error>>;
-
+use crate::game::code::{RobotCode, CODE_SLOTS};
 use crate::game::gird::Grid;
 use super::Window;
 
@@ -17,6 +17,6 @@ impl Window {
         let canvas = sdl_window.into_canvas();
         let event_pump = sdl.event_pump()?;
 
-        Ok(Self { _sdl: sdl, canvas, event_pump, grid })
+        Ok(Self { _sdl: sdl, canvas, event_pump, grid, code: [None; CODE_SLOTS], })
     }
 }

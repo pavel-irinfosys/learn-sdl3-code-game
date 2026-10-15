@@ -31,3 +31,6 @@ impl fmt::Display for CodeInstruction {
         }
     }
 }
+
+pub const CODE_SLOTS: usize = 8;
+pub type RobotCode = [Option<CodeInstruction>; CODE_SLOTS];

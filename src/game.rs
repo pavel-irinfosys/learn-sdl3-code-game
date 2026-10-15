@@ -1,4 +1,4 @@
 
 pub mod gird;
-mod code;
+pub(crate) mod code;
 

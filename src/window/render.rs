@@ -1,16 +1,19 @@
 use super::Window;
-use crate::game::gird::{Position, TileEnum};
+use crate::game::gird::{DirectionEnum, Position, TileEnum};
+use crate::game::code::{CodeInstruction, CODE_SLOTS};
 use crate::utility::ConvertColor;
 use sdl3::pixels::Color;
-use sdl3::render::FRect;
+use sdl3::render::{FPoint, FRect};
 
 const PANEL_H: f32 = 110.0; // height reserved for the code panel
-use std::process;
+
 impl Window {
     pub fn render(&mut self) {
         self.clear("#1B1A1A".to_sdl_color());
         // draw call
         self.draw_grid();
+        self.draw_code_panel();
+
         self.canvas.present();
     }
 
@@ -24,11 +27,16 @@ impl Window {
             Ok(size) => size,
             Err(_) => return,
         };
+
+        let padding = 16.0;
+        let area_w = w as f32 - padding * 2.0;
+        let area_h = h as f32 - PANEL_H - padding * 2.0; // space above the panel
+
         let n = self.grid.size as f32;
-        let cell = (w.min(h) as f32 / n).floor(); // square cells that fit the window
-        let offset_x = (w as f32 - cell * n) / 2.0; // center the board
-        let offset_y = (h as f32 - cell * n) / 2.0;
-        let gap = 2.0;
+        let cell = (area_w.min(area_h) / n).floor();
+        let offset_x = (w as f32 - cell * n) / 2.0;
+        let offset_y = padding + (area_h - cell * n) / 2.0; // centered in the area above the panel
+        let gap = 4.0;
 
         for y in 0..self.grid.size {
             for x in 0..self.grid.size {
@@ -43,7 +51,6 @@ impl Window {
                 let _ = self.canvas.fill_rect(rect);
             }
         }
-        // process::exit(0);
     }
 
     fn draw_code_panel(&mut self) {

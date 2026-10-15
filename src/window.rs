@@ -1,6 +1,7 @@
 
 use sdl3::render::Canvas;
 use sdl3::{ EventPump, Sdl };
+use crate::game::code::RobotCode;
 use crate::game::gird::Grid;
 
 mod view;
@@ -13,4 +14,5 @@ pub struct Window {
     canvas: Canvas<sdl3::video::Window>,
     event_pump: EventPump,
     grid: Grid,
+    code: RobotCode
 }
