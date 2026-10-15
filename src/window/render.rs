@@ -4,16 +4,33 @@ use crate::game::code::{CodeInstruction, CODE_SLOTS};
 use crate::utility::ConvertColor;
 use sdl3::pixels::Color;
 use sdl3::render::{FPoint, FRect};
+use std::f32::consts::PI;
+use sdl3::ttf::Font;
+
+const BTN_SIZE: f32 = 44.0;
+const BTN_MARGIN: f32 = 16.0;
 
 const PANEL_H: f32 = 110.0; // height reserved for the code panel
 
 impl Window {
+
+    /// Button position and size as (x, y, size)
+    pub(super) fn reset_button(&self) -> (f32, f32, f32) {
+        let w = self.canvas.output_size().map(|(w, _)| w as f32).unwrap_or(800.0);
+        (w - BTN_MARGIN - BTN_SIZE, BTN_MARGIN, BTN_SIZE)
+    }
+
+    pub(super) fn hit_reset_button(&self, mx: f32, my: f32) -> bool {
+        let (x, y, s) = self.reset_button();
+        mx >= x && mx <= x + s && my >= y && my <= y + s
+    }
+
     pub fn render(&mut self) {
         self.clear("#1B1A1A".to_sdl_color());
         // draw call
         self.draw_grid();
         self.draw_code_panel();
-
+        self.draw_reset_button();
         self.canvas.present();
     }
 
@@ -111,6 +128,40 @@ impl Window {
             let _ = self.canvas.draw_line(off(tail), off(tip));
             let _ = self.canvas.draw_line(off(tip), off(wing_a));
             let _ = self.canvas.draw_line(off(tip), off(wing_b));
+        }
+    }
+
+    fn draw_reset_button(&mut self) {
+        let (x, y, s) = self.reset_button();
+
+        // background + border
+        self.canvas.set_draw_color("#313647".to_sdl_color());
+        let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
+        self.canvas.set_draw_color("#A3B087".to_sdl_color());
+        let _ = self.canvas.draw_rect(FRect::new(x, y, s, s));
+
+        // emoji icon
+        let surface = match self.emoji_font.render("🐢").blended(Color::WHITE) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("emoji render failed: {e}");
+                return;
+            }
+        };
+        let creator = self.canvas.texture_creator();
+        let texture = match creator.create_texture_from_surface(&surface) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("emoji texture failed: {e}");
+                return;
+            }
+        };
+
+        // fit the emoji inside the button with some padding
+        let icon = s * 0.65;
+        let dst = FRect::new(x + (s - icon) / 2.0, y + (s - icon) / 2.0, icon, icon);
+        if let Err(e) = self.canvas.copy(&texture, None, dst) {
+            eprintln!("emoji copy failed: {e}");
         }
     }
 }

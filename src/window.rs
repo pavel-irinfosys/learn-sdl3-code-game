@@ -1,6 +1,7 @@
 
 use sdl3::render::Canvas;
 use sdl3::{ EventPump, Sdl };
+use sdl3::ttf::Font;
 use crate::game::code::RobotCode;
 use crate::game::gird::Grid;
 
@@ -14,5 +15,6 @@ pub struct Window {
     canvas: Canvas<sdl3::video::Window>,
     event_pump: EventPump,
     grid: Grid,
-    code: RobotCode
+    code: RobotCode,
+    emoji_font: Font<'static>,
 }
