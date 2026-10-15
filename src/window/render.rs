@@ -1,11 +1,10 @@
 use super::Window;
+use crate::game::code::{CODE_SLOTS, CodeInstruction};
 use crate::game::gird::{DirectionEnum, Position, TileEnum};
-use crate::game::code::{CodeInstruction, CODE_SLOTS};
 use crate::utility::ConvertColor;
-use sdl3::pixels::Color;
-use sdl3::render::{FPoint, FRect};
+use sdl3::pixels::{Color, PixelFormat};
+use sdl3::render::{BlendMode, FPoint, FRect};
 use std::f32::consts::PI;
-use sdl3::ttf::Font;
 
 const BTN_SIZE: f32 = 44.0;
 const BTN_MARGIN: f32 = 16.0;
@@ -13,10 +12,13 @@ const BTN_MARGIN: f32 = 16.0;
 const PANEL_H: f32 = 110.0; // height reserved for the code panel
 
 impl Window {
-
     /// Button position and size as (x, y, size)
     pub(super) fn reset_button(&self) -> (f32, f32, f32) {
-        let w = self.canvas.output_size().map(|(w, _)| w as f32).unwrap_or(800.0);
+        let w = self
+            .canvas
+            .output_size()
+            .map(|(w, _)| w as f32)
+            .unwrap_or(800.0);
         (w - BTN_MARGIN - BTN_SIZE, BTN_MARGIN, BTN_SIZE)
     }
 
@@ -79,7 +81,9 @@ impl Window {
 
         // panel background
         self.canvas.set_draw_color("#262626".to_sdl_color());
-        let _ = self.canvas.fill_rect(FRect::new(0.0, h - PANEL_H, w, PANEL_H));
+        let _ = self
+            .canvas
+            .fill_rect(FRect::new(0.0, h - PANEL_H, w, PANEL_H));
 
         // 8 boxes in one row
         let margin = 16.0;
@@ -135,33 +139,42 @@ impl Window {
         let (x, y, s) = self.reset_button();
 
         // background + border
-        self.canvas.set_draw_color("#313647".to_sdl_color());
+        let bg = if self.reset_pressed {
+            "#1F2330"
+        } else {
+            "#313647"
+        };
+        self.canvas.set_draw_color(bg.to_sdl_color());
         let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
         self.canvas.set_draw_color("#A3B087".to_sdl_color());
         let _ = self.canvas.draw_rect(FRect::new(x, y, s, s));
 
-        // emoji icon
-        let surface = match self.emoji_font.render("🐢").blended(Color::WHITE) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("emoji render failed: {e}");
-                return;
-            }
-        };
+        // image icon (turtle)
         let creator = self.canvas.texture_creator();
-        let texture = match creator.create_texture_from_surface(&surface) {
-            Ok(t) => t,
-            Err(e) => {
-                eprintln!("emoji texture failed: {e}");
-                return;
-            }
-        };
+        let mut texture =
+            match creator.create_texture_static(PixelFormat::RGBA32, self.icon_w, self.icon_h) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("icon texture failed: {e}");
+                    return;
+                }
+            };
+        if let Err(e) = texture.update(None, &self.icon_pixels, (self.icon_w * 4) as usize) {
+            eprintln!("icon update failed: {e}");
+            return;
+        }
+        texture.set_blend_mode(BlendMode::Blend); // keep PNG transparency
 
-        // fit the emoji inside the button with some padding
         let icon = s * 0.65;
-        let dst = FRect::new(x + (s - icon) / 2.0, y + (s - icon) / 2.0, icon, icon);
+        let nudge = if self.reset_pressed { 2.0 } else { 0.0 };
+        let dst = FRect::new(
+            x + (s - icon) / 2.0 + nudge,
+            y + (s - icon) / 2.0 + nudge,
+            icon,
+            icon,
+        );
         if let Err(e) = self.canvas.copy(&texture, None, dst) {
-            eprintln!("emoji copy failed: {e}");
+            eprintln!("icon copy failed: {e}");
         }
     }
 }

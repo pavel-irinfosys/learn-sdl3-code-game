@@ -49,10 +49,10 @@ impl Position {
 
     pub fn step(self, direction: DirectionEnum) -> Position {
         match direction {
-            DirectionEnum::UP       => Position::new(self.x,        self.y - 1),
-            DirectionEnum::LEFT     => Position::new(self.x - 1,    self.x),
-            DirectionEnum::DOWN     => Position::new(self.x,        self.y + 1),
-            DirectionEnum::RIGHT    => Position::new(self.x + 1,    self.x),
+            DirectionEnum::UP => Position::new(self.x, self.y - 1),
+            DirectionEnum::LEFT => Position::new(self.x - 1, self.x),
+            DirectionEnum::DOWN => Position::new(self.x, self.y + 1),
+            DirectionEnum::RIGHT => Position::new(self.x + 1, self.x),
         }
     }
 
@@ -126,12 +126,27 @@ impl Grid {
             let y = (next() % self.size as u64) as i32;
             let pos = Position::new(x, y);
 
-            if (x == 0 && y == 0) || self.get(pos) == TileEnum::ROCK || self.get(pos) == TileEnum::START || self.get(pos) == TileEnum::END {
+            if (x == 0 && y == 0)
+                || self.get(pos) == TileEnum::ROCK
+                || self.get(pos) == TileEnum::START
+                || self.get(pos) == TileEnum::END
+            {
                 continue; // start cell or already a rock: try again
             }
             self.set(pos, TileEnum::ROCK);
             placed += 1;
         }
+    }
+
+    pub fn reset(&mut self, rocks: usize, seed: u64, start: Position, end: Position) {
+        for y in 0..self.size {
+            for x in 0..self.size {
+                self.set(Position::new(x, y), TileEnum::EMPTY);
+            }
+        }
+        self.set_random_rocks(rocks, seed);
+        self.set(start, TileEnum::START);
+        self.set(end, TileEnum::END);
     }
 
     fn index_of(&self, position: Position) -> usize {
