@@ -13,7 +13,7 @@ pub struct Window {
     canvas: Canvas<sdl3::video::Window>,
     event_pump: EventPump,
     grid: Grid,
-    code: RobotCode,
+    pub code: RobotCode,   // <- pub
     pub reset_pressed: bool,
     icon_pixels: Vec<u8>,
     icon_w: u32,

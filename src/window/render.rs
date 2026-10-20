@@ -4,7 +4,6 @@ use crate::game::gird::{DirectionEnum, Position, TileEnum};
 use crate::utility::ConvertColor;
 use sdl3::pixels::{Color, PixelFormat};
 use sdl3::render::{BlendMode, FPoint, FRect};
-use std::f32::consts::PI;
 
 const BTN_SIZE: f32 = 44.0;
 const BTN_MARGIN: f32 = 16.0;
@@ -27,9 +26,35 @@ impl Window {
         mx >= x && mx <= x + s && my >= y && my <= y + s
     }
 
+    /// Box position and size for code slot i, as (x, y, size)
+    pub(super) fn code_box(&self, i: usize) -> (f32, f32, f32) {
+        let (w, h) = self
+            .canvas
+            .output_size()
+            .map(|(w, h)| (w as f32, h as f32))
+            .unwrap_or((800.0, 640.0));
+
+        let margin = 16.0;
+        let gap = 8.0;
+        let n = CODE_SLOTS as f32;
+        let size = ((w - margin * 2.0 - gap * (n - 1.0)) / n).min(PANEL_H - margin * 2.0);
+        let total_w = size * n + gap * (n - 1.0);
+        let start_x = (w - total_w) / 2.0;
+        let y = h - PANEL_H + (PANEL_H - size) / 2.0;
+
+        (start_x + i as f32 * (size + gap), y, size)
+    }
+
+    /// Which code slot is under the mouse, if any
+    pub(super) fn hit_code_box(&self, mx: f32, my: f32) -> Option<usize> {
+        (0..CODE_SLOTS).find(|&i| {
+            let (x, y, s) = self.code_box(i);
+            mx >= x && mx <= x + s && my >= y && my <= y + s
+        })
+    }
+
     pub fn render(&mut self) {
         self.clear("#1B1A1A".to_sdl_color());
-        // draw call
         self.draw_grid();
         self.draw_code_panel();
         self.draw_reset_button();
@@ -49,12 +74,12 @@ impl Window {
 
         let padding = 16.0;
         let area_w = w as f32 - padding * 2.0;
-        let area_h = h as f32 - PANEL_H - padding * 2.0; // space above the panel
+        let area_h = h as f32 - PANEL_H - padding * 2.0;
 
         let n = self.grid.size as f32;
         let cell = (area_w.min(area_h) / n).floor();
         let offset_x = (w as f32 - cell * n) / 2.0;
-        let offset_y = padding + (area_h - cell * n) / 2.0; // centered in the area above the panel
+        let offset_y = padding + (area_h - cell * n) / 2.0;
         let gap = 4.0;
 
         for y in 0..self.grid.size {
@@ -85,27 +110,17 @@ impl Window {
             .canvas
             .fill_rect(FRect::new(0.0, h - PANEL_H, w, PANEL_H));
 
-        // 8 boxes in one row
-        let margin = 16.0;
-        let gap = 8.0;
-        let n = CODE_SLOTS as f32;
-        let box_size = ((w - margin * 2.0 - gap * (n - 1.0)) / n).min(PANEL_H - margin * 2.0);
-        let total_w = box_size * n + gap * (n - 1.0);
-        let start_x = (w - total_w) / 2.0;
-        let y = h - PANEL_H + (PANEL_H - box_size) / 2.0;
-
         for i in 0..CODE_SLOTS {
-            let x = start_x + i as f32 * (box_size + gap);
+            let (x, y, s) = self.code_box(i);
 
-            // box
             self.canvas.set_draw_color("#313647".to_sdl_color());
-            let _ = self.canvas.fill_rect(FRect::new(x, y, box_size, box_size));
+            let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
             self.canvas.set_draw_color("#A3B087".to_sdl_color());
-            let _ = self.canvas.draw_rect(FRect::new(x, y, box_size, box_size));
+            let _ = self.canvas.draw_rect(FRect::new(x, y, s, s));
 
             // arrow (empty slot = nothing drawn)
             if let Some(CodeInstruction::Move(dir)) = self.code[i] {
-                self.draw_arrow(x + box_size / 2.0, y + box_size / 2.0, box_size * 0.3, dir);
+                self.draw_arrow(x + s / 2.0, y + s / 2.0, s * 0.3, dir);
             }
         }
     }
@@ -117,7 +132,7 @@ impl Window {
             DirectionEnum::LEFT => (-1.0, 0.0),
             DirectionEnum::RIGHT => (1.0, 0.0),
         };
-        let (px, py) = (-dy, dx); // perpendicular
+        let (px, py) = (-dy, dx);
         let head = size * 0.6;
 
         let tail = FPoint::new(cx - dx * size, cy - dy * size);
@@ -126,7 +141,6 @@ impl Window {
         let wing_b = FPoint::new(tip.x - dx * head - px * head, tip.y - dy * head - py * head);
 
         self.canvas.set_draw_color("#FF7F11".to_sdl_color());
-        // draw a few offset lines to make it thicker
         for o in [-1.0_f32, 0.0, 1.0] {
             let off = |p: FPoint| FPoint::new(p.x + px * o, p.y + py * o);
             let _ = self.canvas.draw_line(off(tail), off(tip));
@@ -138,12 +152,7 @@ impl Window {
     fn draw_reset_button(&mut self) {
         let (x, y, s) = self.reset_button();
 
-        // background + border
-        let bg = if self.reset_pressed {
-            "#1F2330"
-        } else {
-            "#313647"
-        };
+        let bg = if self.reset_pressed { "#1F2330" } else { "#313647" };
         self.canvas.set_draw_color(bg.to_sdl_color());
         let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
         self.canvas.set_draw_color("#A3B087".to_sdl_color());
@@ -163,7 +172,7 @@ impl Window {
             eprintln!("icon update failed: {e}");
             return;
         }
-        texture.set_blend_mode(BlendMode::Blend); // keep PNG transparency
+        texture.set_blend_mode(BlendMode::Blend);
 
         let icon = s * 0.65;
         let nudge = if self.reset_pressed { 2.0 } else { 0.0 };
@@ -178,6 +187,7 @@ impl Window {
         }
     }
 }
+
 fn tile_color(tile: TileEnum) -> Color {
     match tile {
         TileEnum::EMPTY => "#A3B087".to_sdl_color(),

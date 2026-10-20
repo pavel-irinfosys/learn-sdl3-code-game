@@ -38,6 +38,7 @@ impl Window {
             icon_h,
         })
     }
+    
 
     pub fn reset(&mut self) {
         println!("reset!"); // remove after testing
