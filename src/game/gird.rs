@@ -27,14 +27,14 @@ pub enum DirectionEnum {
     RIGHT,
 }
 
-impl DirectionEnum {
-    pub const ALL: [DirectionEnum; 4] = [
-        DirectionEnum::UP,
-        DirectionEnum::DOWN,
-        DirectionEnum::LEFT,
-        DirectionEnum::RIGHT,
-    ];
-}
+// impl DirectionEnum {
+//     pub const ALL: [DirectionEnum; 4] = [
+//         DirectionEnum::UP,
+//         DirectionEnum::DOWN,
+//         DirectionEnum::LEFT,
+//         DirectionEnum::RIGHT,
+//     ];
+// }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Position {
@@ -47,19 +47,19 @@ impl Position {
         Position { x, y }
     }
 
-    pub fn step(self, direction: DirectionEnum) -> Position {
-        match direction {
-            DirectionEnum::UP => Position::new(self.x, self.y - 1),
-            DirectionEnum::LEFT => Position::new(self.x - 1, self.x),
-            DirectionEnum::DOWN => Position::new(self.x, self.y + 1),
-            DirectionEnum::RIGHT => Position::new(self.x + 1, self.x),
-        }
-    }
+    // pub fn step(self, direction: DirectionEnum) -> Position {
+    //     match direction {
+    //         DirectionEnum::UP => Position::new(self.x, self.y - 1),
+    //         DirectionEnum::LEFT => Position::new(self.x - 1, self.x),
+    //         DirectionEnum::DOWN => Position::new(self.x, self.y + 1),
+    //         DirectionEnum::RIGHT => Position::new(self.x + 1, self.x),
+    //     }
+    // }
 
-    pub fn distance_square(self, position: Position) -> i32 {
-        (self.x - position.x) * (self.x - position.x)
-            + (self.y - position.y) * (self.y - position.y)
-    }
+    // pub fn distance_square(self, position: Position) -> i32 {
+    //     (self.x - position.x) * (self.x - position.x)
+    //         + (self.y - position.y) * (self.y - position.y)
+    // }
 }
 
 #[derive(Clone, Debug)]
@@ -95,9 +95,9 @@ impl Grid {
         }
     }
 
-    pub fn walkable(&mut self, position: Position) -> bool {
-        self.get(position) == TileEnum::EMPTY
-    }
+    // pub fn walkable(&mut self, position: Position) -> bool {
+    //     self.get(position) == TileEnum::EMPTY
+    // }
 
     pub fn print(&self) {
         for y in 0..self.size {

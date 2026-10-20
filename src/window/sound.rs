@@ -37,9 +37,9 @@ impl Sound {
         let _ = self.stream.put_data_f32(&samples);
     }
 
-    pub fn click(&mut self) {
-        self.play(&[(900.0, 0.03)]);
-    }
+    // pub fn click(&mut self) {
+    //     self.play(&[(900.0, 0.03)]);
+    // }
     pub fn step(&mut self) {
         self.play(&[(440.0, 0.08)]);
     }

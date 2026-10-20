@@ -3,8 +3,9 @@ use crate::game::code::{CODE_SLOTS, CodeInstruction};
 use crate::game::gird::{DirectionEnum, Position, TileEnum};
 use crate::utility::ConvertColor;
 use crate::window::RunStatus;
-use sdl3::pixels::{Color, PixelFormat};
-use sdl3::render::{BlendMode, FPoint, FRect};
+use sdl3::pixels::Color;
+use sdl3::render::{FPoint, FRect};
+use std::f32::consts::PI;
 
 const BTN_SIZE: f32 = 44.0;
 const BTN_MARGIN: f32 = 16.0;
@@ -166,32 +167,40 @@ impl Window {
         self.canvas.set_draw_color("#A3B087".to_sdl_color());
         let _ = self.canvas.draw_rect(FRect::new(x, y, s, s));
 
-        // image icon (turtle)
-        let creator = self.canvas.texture_creator();
-        let mut texture =
-            match creator.create_texture_static(PixelFormat::RGBA32, self.icon_w, self.icon_h) {
-                Ok(t) => t,
-                Err(e) => {
-                    eprintln!("icon texture failed: {e}");
-                    return;
-                }
-            };
-        if let Err(e) = texture.update(None, &self.icon_pixels, (self.icon_w * 4) as usize) {
-            eprintln!("icon update failed: {e}");
-            return;
-        }
-        texture.set_blend_mode(BlendMode::Blend);
-
-        let icon = s * 0.65;
+        // circular arrow symbol
         let nudge = if self.reset_pressed { 2.0 } else { 0.0 };
-        let dst = FRect::new(
-            x + (s - icon) / 2.0 + nudge,
-            y + (s - icon) / 2.0 + nudge,
-            icon,
-            icon,
-        );
-        if let Err(e) = self.canvas.copy(&texture, None, dst) {
-            eprintln!("icon copy failed: {e}");
+        let (cx, cy) = (x + s / 2.0 + nudge, y + s / 2.0 + nudge);
+        let r = s * 0.28;
+        let (start, end) = (PI * 0.25, PI * 1.85); // open circle
+        let steps = 24;
+        let point = |a: f32| FPoint::new(cx + r * a.cos(), cy + r * a.sin());
+
+        self.canvas.set_draw_color("#FF7F11".to_sdl_color());
+        for i in 0..steps {
+            let a1 = start + (end - start) * i as f32 / steps as f32;
+            let a2 = start + (end - start) * (i + 1) as f32 / steps as f32;
+            // two lines side by side make the stroke thicker
+            for o in [0.0_f32, 1.0] {
+                let _ = self.canvas.draw_line(
+                    FPoint::new(point(a1).x, point(a1).y + o),
+                    FPoint::new(point(a2).x, point(a2).y + o),
+                );
+            }
+        }
+
+        // arrow head at the end of the arc
+        let tip = point(end);
+        let tangent = (-end.sin(), end.cos());
+        let normal = (end.cos(), end.sin());
+        let head = r * 0.6;
+        for sign in [1.0_f32, -1.0] {
+            let _ = self.canvas.draw_line(
+                tip,
+                FPoint::new(
+                    tip.x - tangent.0 * head + normal.0 * head * sign,
+                    tip.y - tangent.1 * head + normal.1 * head * sign,
+                ),
+            );
         }
     }
 

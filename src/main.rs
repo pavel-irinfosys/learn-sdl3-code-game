@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     grid.set_random_start_end(seed);
     grid.print();
 
-    let mut win = Window::new("My App", 800, 640, grid)?;
+    let mut win = Window::new("Arrow Bot", 800, 640, grid)?;
     win.code = load_code("robot_code.txt");
     win.view();
     Ok(())

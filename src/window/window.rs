@@ -2,7 +2,7 @@ type AppResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 use super::{RunStatus, Window};
 use crate::game::code::CODE_SLOTS;
-use crate::game::gird::{Grid, Position};
+use crate::game::gird::Grid;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 impl Window {
@@ -19,11 +19,6 @@ impl Window {
         let canvas = sdl_window.into_canvas();
         let event_pump = sdl.event_pump()?;
 
-        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/reset.png");
-        let img = image::open(path)?.to_rgba8();
-        let (icon_w, icon_h) = img.dimensions();
-        let icon_pixels = img.into_raw();
-
         // must be computed before `grid` is moved into Self
         let robot = grid.find_start().unwrap_or((0, 0));
         let sound = super::Sound::new(&sdl).ok(); // before `_sdl: sdl` moves sdl
@@ -34,9 +29,6 @@ impl Window {
             grid,
             code: [None; CODE_SLOTS],
             reset_pressed: false,
-            icon_pixels,
-            icon_w,
-            icon_h,
             robot,
             run_index: None,
             last_step: Instant::now(),

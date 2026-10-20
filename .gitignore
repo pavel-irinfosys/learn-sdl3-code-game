@@ -26,3 +26,4 @@ Cargo.lock
 
 /target
 robot_code.txt
+/release
