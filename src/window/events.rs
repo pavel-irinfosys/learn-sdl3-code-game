@@ -18,19 +18,24 @@ impl Window {
                     }
                 }
                 Event::MouseButtonDown { mouse_btn, x, y, .. } => {
-                    if mouse_btn == MouseButton::Left && self.hit_reset_button(x, y) {
+                    if mouse_btn == MouseButton::Left && self.hit_run_button(x, y) {
+                        self.start_run();
+                    } else if mouse_btn == MouseButton::Left && self.hit_reset_button(x, y) {
                         self.reset_pressed = true;
-                    } else if let Some(i) = self.hit_code_box(x, y) {
-                        match mouse_btn {
-                            MouseButton::Left => {
-                                self.code[i] = CodeInstruction::cycle(self.code[i]);
-                                self.save();
+                    } else if self.run_index.is_none() {
+                        // code boxes are locked while the robot is running
+                        if let Some(i) = self.hit_code_box(x, y) {
+                            match mouse_btn {
+                                MouseButton::Left => {
+                                    self.code[i] = CodeInstruction::cycle(self.code[i]);
+                                    self.save();
+                                }
+                                MouseButton::Right => {
+                                    self.code[i] = None;
+                                    self.save();
+                                }
+                                _ => {}
                             }
-                            MouseButton::Right => {
-                                self.code[i] = None;
-                                self.save();
-                            }
-                            _ => {}
                         }
                     }
                 }
@@ -74,6 +79,7 @@ impl Window {
                             self.code = load_code(SAVE_PATH);
                             println!("code loaded");
                         }
+                        Keycode::Space => self.start_run(),
                         _ => {}
                     }
                 }

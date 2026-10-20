@@ -1,9 +1,9 @@
 type AppResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-use super::Window;
+use super::{RunStatus, Window};
 use crate::game::code::CODE_SLOTS;
 use crate::game::gird::{Grid, Position};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 impl Window {
     pub fn new(title: &str, width: u32, height: u32, grid: Grid) -> AppResult<Self> {
@@ -18,13 +18,14 @@ impl Window {
 
         let canvas = sdl_window.into_canvas();
         let event_pump = sdl.event_pump()?;
-        // inside Window::new, before Ok(Self { ... })
-
 
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/reset.png");
         let img = image::open(path)?.to_rgba8();
         let (icon_w, icon_h) = img.dimensions();
         let icon_pixels = img.into_raw();
+
+        // must be computed before `grid` is moved into Self
+        let robot = grid.find_start().unwrap_or((0, 0));
 
         Ok(Self {
             _sdl: sdl,
@@ -36,12 +37,14 @@ impl Window {
             icon_pixels,
             icon_w,
             icon_h,
+            robot,
+            run_index: None,
+            last_step: Instant::now(),
+            status: RunStatus::Idle,
         })
     }
-    
 
     pub fn reset(&mut self) {
-        println!("reset!"); // remove after testing
         let seed = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -49,5 +52,6 @@ impl Window {
         self.grid
             .reset(3, seed, Position::new(2, 2), Position::new(0, 2));
         self.code = [None; CODE_SLOTS];
+        self.stop_run();
     }
 }

@@ -152,4 +152,15 @@ impl Grid {
     fn index_of(&self, position: Position) -> usize {
         (position.x + self.size * position.y) as usize
     }
+
+    pub fn find_start(&self) -> Option<(i32, i32)> {
+    for y in 0..self.size {
+        for x in 0..self.size {
+            if matches!(self.get(Position::new(x, y)), TileEnum::START) {
+                return Some((x as i32, y as i32));
+            }
+        }
+    }
+    None
+}
 }

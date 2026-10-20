@@ -2,6 +2,7 @@ use super::Window;
 use crate::game::code::{CODE_SLOTS, CodeInstruction};
 use crate::game::gird::{DirectionEnum, Position, TileEnum};
 use crate::utility::ConvertColor;
+use crate::window::RunStatus;
 use sdl3::pixels::{Color, PixelFormat};
 use sdl3::render::{BlendMode, FPoint, FRect};
 
@@ -54,10 +55,13 @@ impl Window {
     }
 
     pub fn render(&mut self) {
+        self.update(); // advance the run
         self.clear("#1B1A1A".to_sdl_color());
         self.draw_grid();
+        self.draw_robot();
         self.draw_code_panel();
         self.draw_reset_button();
+        self.draw_run_button();
         self.canvas.present();
     }
 
@@ -152,7 +156,11 @@ impl Window {
     fn draw_reset_button(&mut self) {
         let (x, y, s) = self.reset_button();
 
-        let bg = if self.reset_pressed { "#1F2330" } else { "#313647" };
+        let bg = if self.reset_pressed {
+            "#1F2330"
+        } else {
+            "#313647"
+        };
         self.canvas.set_draw_color(bg.to_sdl_color());
         let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
         self.canvas.set_draw_color("#A3B087".to_sdl_color());
@@ -184,6 +192,73 @@ impl Window {
         );
         if let Err(e) = self.canvas.copy(&texture, None, dst) {
             eprintln!("icon copy failed: {e}");
+        }
+    }
+
+    /// Run button (top-left): (x, y, size)
+    pub(super) fn run_button(&self) -> (f32, f32, f32) {
+        (BTN_MARGIN, BTN_MARGIN, BTN_SIZE)
+    }
+
+    pub(super) fn hit_run_button(&self, mx: f32, my: f32) -> bool {
+        let (x, y, s) = self.run_button();
+        mx >= x && mx <= x + s && my >= y && my <= y + s
+    }
+
+    /// Grid layout as (offset_x, offset_y, cell)
+    fn grid_layout(&self) -> (f32, f32, f32) {
+        let (w, h) = self.canvas.output_size().unwrap_or((800, 640));
+        let padding = 16.0;
+        let area_w = w as f32 - padding * 2.0;
+        let area_h = h as f32 - PANEL_H - padding * 2.0;
+        let n = self.grid.size as f32;
+        let cell = (area_w.min(area_h) / n).floor();
+        (
+            (w as f32 - cell * n) / 2.0,
+            padding + (area_h - cell * n) / 2.0,
+            cell,
+        )
+    }
+
+    fn draw_robot(&mut self) {
+        let (ox, oy, cell) = self.grid_layout();
+        let color = match self.status {
+            RunStatus::Won => "#6BCB77",
+            RunStatus::Blocked | RunStatus::OutOfMoves => "#E63946",
+            _ => "#F1FAEE",
+        };
+        let pad = cell * 0.25;
+        self.canvas.set_draw_color(color.to_sdl_color());
+        let _ = self.canvas.fill_rect(FRect::new(
+            ox + self.robot.0 as f32 * cell + pad,
+            oy + self.robot.1 as f32 * cell + pad,
+            cell - pad * 2.0,
+            cell - pad * 2.0,
+        ));
+    }
+
+    fn draw_run_button(&mut self) {
+        let (x, y, s) = self.run_button();
+        let bg = if self.status == RunStatus::Running {
+            "#1F2330"
+        } else {
+            "#313647"
+        };
+        self.canvas.set_draw_color(bg.to_sdl_color());
+        let _ = self.canvas.fill_rect(FRect::new(x, y, s, s));
+        self.canvas.set_draw_color("#A3B087".to_sdl_color());
+        let _ = self.canvas.draw_rect(FRect::new(x, y, s, s));
+
+        // play triangle, filled with vertical lines
+        let (x0, x1, cy) = (x + s * 0.35, x + s * 0.75, y + s / 2.0);
+        let mut px = x0;
+        self.canvas.set_draw_color("#6BCB77".to_sdl_color());
+        while px <= x1 {
+            let half = (x1 - px) / (x1 - x0) * s * 0.25;
+            let _ = self
+                .canvas
+                .draw_line(FPoint::new(px, cy - half), FPoint::new(px, cy + half));
+            px += 1.0;
         }
     }
 }
