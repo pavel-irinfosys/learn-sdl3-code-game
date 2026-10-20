@@ -138,15 +138,14 @@ impl Grid {
         }
     }
 
-    pub fn reset(&mut self, rocks: usize, seed: u64, start: Position, end: Position) {
+    pub fn reset(&mut self, rocks: usize, seed: u64) {
         for y in 0..self.size {
             for x in 0..self.size {
                 self.set(Position::new(x, y), TileEnum::EMPTY);
             }
         }
         self.set_random_rocks(rocks, seed);
-        self.set(start, TileEnum::START);
-        self.set(end, TileEnum::END);
+        self.set_random_start_end(seed);
     }
 
     fn index_of(&self, position: Position) -> usize {
@@ -154,13 +153,41 @@ impl Grid {
     }
 
     pub fn find_start(&self) -> Option<(i32, i32)> {
-    for y in 0..self.size {
-        for x in 0..self.size {
-            if matches!(self.get(Position::new(x, y)), TileEnum::START) {
-                return Some((x as i32, y as i32));
+        for y in 0..self.size {
+            for x in 0..self.size {
+                if matches!(self.get(Position::new(x, y)), TileEnum::START) {
+                    return Some((x as i32, y as i32));
+                }
             }
         }
+        None
     }
-    None
-}
+    pub fn set_random_start_end(&mut self, seed: u64) {
+        let mut free = Vec::new();
+        for y in 0..self.size {
+            for x in 0..self.size {
+                if matches!(self.get(Position::new(x, y)), TileEnum::EMPTY) {
+                    free.push((x, y));
+                }
+            }
+        }
+        if free.len() < 2 {
+            return;
+        }
+
+        // tiny xorshift random generator
+        let mut state = seed ^ 0x9E37_79B9_7F4A_7C15;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+
+        let start = free.remove(next() as usize % free.len());
+        let end = free[next() as usize % free.len()];
+
+        self.set(Position::new(start.0, start.1), TileEnum::START);
+        self.set(Position::new(end.0, end.1), TileEnum::END);
+    }
 }

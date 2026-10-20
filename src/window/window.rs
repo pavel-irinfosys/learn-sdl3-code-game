@@ -49,8 +49,7 @@ impl Window {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos() as u64;
-        self.grid
-            .reset(3, seed, Position::new(2, 2), Position::new(0, 2));
+        self.grid.reset(3, seed);
         self.code = [None; CODE_SLOTS];
         self.stop_run();
     }

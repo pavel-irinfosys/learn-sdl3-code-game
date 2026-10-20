@@ -3,7 +3,7 @@ mod utility;
 mod window;
 
 use crate::game::code::load_code;
-use crate::game::gird::{Grid, Position, TileEnum};
+use crate::game::gird::Grid;
 use std::time::{SystemTime, UNIX_EPOCH};
 use window::Window;
 
@@ -15,12 +15,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut grid = Grid::new(4);
     grid.set_random_rocks(3, seed);
-    grid.set(Position::new(2, 2), TileEnum::START);
-    grid.set(Position::new(0, 2), TileEnum::END);
+    grid.set_random_start_end(seed);
     grid.print();
 
     let mut win = Window::new("My App", 800, 640, grid)?;
-    win.code = load_code("robot_code.txt"); // restore the saved code
+    win.code = load_code("robot_code.txt");
     win.view();
     Ok(())
 }
