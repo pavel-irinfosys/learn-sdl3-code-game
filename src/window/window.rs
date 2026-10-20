@@ -26,7 +26,7 @@ impl Window {
 
         // must be computed before `grid` is moved into Self
         let robot = grid.find_start().unwrap_or((0, 0));
-
+        let sound = super::Sound::new(&sdl).ok(); // before `_sdl: sdl` moves sdl
         Ok(Self {
             _sdl: sdl,
             canvas,
@@ -41,6 +41,7 @@ impl Window {
             run_index: None,
             last_step: Instant::now(),
             status: RunStatus::Idle,
+            sound,
         })
     }
 

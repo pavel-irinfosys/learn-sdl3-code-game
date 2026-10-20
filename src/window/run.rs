@@ -30,9 +30,24 @@ impl Window {
         self.run_index = None;
         self.status = status;
         match status {
-            RunStatus::Won => println!("reached END!"),
-            RunStatus::Blocked => println!("blocked by a rock or the edge"),
-            RunStatus::OutOfMoves => println!("code ended before reaching END"),
+            RunStatus::Won => {
+                println!("reached END!");
+                if let Some(s) = &mut self.sound {
+                    s.win();
+                }
+            }
+            RunStatus::Blocked => {
+                println!("blocked by a rock or the edge");
+                if let Some(s) = &mut self.sound {
+                    s.blocked();
+                }
+            }
+            RunStatus::OutOfMoves => {
+                println!("code ended before reaching END");
+                if let Some(s) = &mut self.sound {
+                    s.blocked();
+                }
+            }
             _ => {}
         }
     }
@@ -66,7 +81,12 @@ impl Window {
                 self.robot = (nx, ny);
                 self.finish(RunStatus::Won);
             }
-            _ => self.robot = (nx, ny),
+            _ => {
+                self.robot = (nx, ny);
+                if let Some(s) = &mut self.sound {
+                    s.step();
+                }
+            }
         }
     }
 }

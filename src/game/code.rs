@@ -72,7 +72,7 @@ impl FromStr for CodeInstruction {
     }
 }
 
-pub const CODE_SLOTS: usize = 8;
+pub const CODE_SLOTS: usize = 10;
 pub type RobotCode = [Option<CodeInstruction>; CODE_SLOTS];
 
 // ---------- storage ----------

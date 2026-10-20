@@ -3,6 +3,8 @@ use crate::game::gird::Grid;
 use sdl3::render::Canvas;
 use sdl3::{EventPump, Sdl};
 use std::time::Instant;
+mod sound; // next to your other mod lines
+use sound::Sound;
 
 mod events;
 mod render;
@@ -33,4 +35,5 @@ pub struct Window {
     run_index: Option<usize>,
     last_step: Instant,
     status: RunStatus,
+    sound: Option<Sound>, // None if audio fails, the game still runs
 }
